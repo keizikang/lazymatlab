@@ -1,10 +1,12 @@
-$e^x$는 특별한 성질이 있습니다. 미분을 해도 자기 자신이 그대로 나옵니다. 일반적으로 지수함수의 미분은 아래와 같습니다.
-
+* $e^x$는 특별한 성질이 있습니다. 
+* 미분을 해도 자기 자신이 그대로 나옵니다. 
+* 일반적으로 지수함수의 미분은 아래와 같습니다.
 
 $\frac{d}{dx} a^x = a^x \ln{a}$
 
+* 그렇다면 미분해서 원래의 함수와 똑같이 나오는 base를 찾으면 $e$라고 볼 수 있겠군요. 
+* 아래는 해당 과정을 구현한 코드입니다.
 
-그렇다면 미분해서 원래의 함수와 똑같이 나오는 base를 찾으면 $e$라고 볼 수 있겠군요. 아래는 해당 과정을 구현한 코드입니다.
 
 ```matlab
 clear
@@ -59,3 +61,7 @@ end
 l.String = {'$e^x$'  '$\frac{d}{dx}e^x$'};
 t.String = sprintf('final: e = %10.8f (after %d iterations)', base, n_iter);
 ```
+
+* 아래는 코드 실행 결과입니다.
+
+![](https://github.com/keizikang/lazymatlab/blob/master/finding_e/finding_e.gif)
