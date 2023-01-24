@@ -241,7 +241,7 @@ end
 
 ### change_grid_size: grid 크기 변경 구현
 
-* Nrows와 Ncols가 바뀔 때 호출할 콜백 함수가 필요하다.
+* edit_Nrows와 edit_Ncols의 String이 바뀔 때 호출할 콜백 함수가 필요하다.
 * 함수를 하나만 만들고 호출한 객체의 Tag로 구분하는 것이 편할 것 같다.
 
 ```matlab
@@ -259,9 +259,9 @@ display_grid(s.Parent, ...
 end
 ```
 
-* Nrows 또는 Ncols가 바뀌면 base에서도 바꿔줘야 한다.
-  * 이렇게 하지 않으면 행 또는 열 개수가 필요할 때마다 Nrows와 Ncols에서 값을 읽어와야 해서 귀찮아진다.
-* Nrows와 Ncols에도 콜백 함수를 추가한다.
+* edit_Nrows 또는 edit_Ncols의 String이 바뀌면 base에서도 바꿔줘야 한다.
+  * 이렇게 하지 않으면 행 또는 열 개수가 필요할 때마다 edit_Nrows와 edit_Ncols에서 값을 읽어와야 해서 귀찮아진다.
+* edit_Nrows와 edit_Ncols에 콜백 함수 추가한다.
 
 ```matlab
 % edit: number of rows
@@ -288,6 +288,8 @@ edit_Ncols = uicontrol(...
     'position', [0.6200    0.83    0.0964    0.0867], ...
     'Callback', @change_grid_size);
 ```
+
+![](https://github.com/keizikang/lazymatlab/blob/bb53fc320f41216ae505826b267c97eb5b5aee55/AYE/AYE_change_size.gif)
 
 ### highlight: 인덱싱에 따른 cell 하이라이트 구현
 
@@ -345,7 +347,7 @@ try
         for i=1:Nrows
             txt(i,j).BackgroundColor = [.94, .94, .94];
             if A(i,j) == 1                
-                txt(i,j).BackgroundColor = evalin('base', 'highlight_color');
+                txt(i,j).BackgroundColor = [189, 236, 182]/255;
             end
         end
     end
@@ -355,6 +357,8 @@ end
 end
 ```
 
+![](https://github.com/keizikang/lazymatlab/blob/048cf5a955395844c54b6c252f365f8f43038da8/AYE/AYE_highlight.gif)
+
 ### display_error, display_fine: 에러 메시지 구현하기
 
 * 발생 가능한 에러 목록을 만들어본다.
@@ -362,4 +366,82 @@ end
   * 인덱스 표현식이 잘못된 경우 (범위를 벗어났거나 표현이 잘못됐거나)
 
 * 우선 change_grid_size를 수정한다.
-* change_grid_size는 Nrows와 Ncols가 모두 사용하는 콜백함수이다. 둘 중 누가 콜했는지 
+* change_grid_size는 Nrows와 Ncols가 모두 사용하는 콜백함수이다. 
+* 둘 중 누가 콜했는지 판단하기 귀찮다.
+* 그냥 입력된 String을 이용해서 1행짜리 영행렬을 만들어보면 된다.
+
+```matlab
+try
+    zeros(str2double(s.String), 1);
+catch
+    return
+end
+```
+
+* catch에 걸리면 뭔가 잘못된 것이므로 반드시 return을 해줘야 한다.
+
+---
+
+* highlight는 이미 try는 만들어놨다.
+* catch에 들어갈 각 경우만 만들면 된다.
+
+```matlab
+try
+    A = zeros(Nrows, Ncols);
+    eval("A(" + s.String + ");"); % to check if index is within the range
+    eval("A(" + s.String + ") = 1;");
+    
+    for j=1:Ncols
+        for i=1:Nrows
+            txt(i,j).BackgroundColor = [.94, .94, .94];
+            if A(i,j) == 1                
+                txt(i,j).BackgroundColor = [189, 236, 182]/255;
+            end
+        end
+    end
+    display_fine()
+catch ME
+    if strcmp(ME.identifier, 'MATLAB:badsubscript')
+        msg = 'error: index out of range';
+    elseif strcmp(ME.identifier, 'MATLAB:UndefinedFunction')
+        msg = 'error: uninterpretable index input';
+    else
+        msg = 'error: unknown';
+    end
+end
+```
+
+* msg를 만들었으면 보여줘야 한다.
+* 정상임을 보여주는 함수와 에러를 보여주는 함수를 따로 만들었다.
+
+```matlab
+%% display error status
+
+function display_error(msg)
+
+txt_error = evalin('base', 'txt_error');
+txt_error.String = msg;
+txt_error.ForegroundColor = [1, 0, 0];
+
+end
+
+%% display fine status
+
+function display_fine()
+
+txt_error = evalin('base', 'txt_error');
+txt_error.String = 'Everything is fine.';
+txt_error.ForegroundColor = [0, 100, 0]/255;
+
+end
+```
+
+* 이제 필요한 곳에서 display_error와 display_fine을 호출하면 된다.
+
+### 전체 코드
+
+* highlight된 cell의 색, 메시지의 색 등을 맨 앞으로 뺐다.
+
+https://github.com/keizikang/lazymatlab/blob/b025193f4a4a577f596f0d9aaeaed728b0b0eddb/AYE/AYE.m#L1-L250
+
+![](https://github.com/keizikang/lazymatlab/blob/4e306234a9ba9857ec9b07ee553406372177e8bf/AYE/AYE_final.gif)
