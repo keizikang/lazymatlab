@@ -15,7 +15,7 @@
 
 ### display_layout: Layout 만들기
 
-* UI 가운데에 행렬은 grid처럼 생겼으니까 지금부터 grid라고 부르겠다.
+* UI 가운데에 놓인 행렬은 grid처럼 생겼으니까 지금부터 grid라고 부르겠다.
 * 우선 grid가 들어갈 위치를 대충 정한다.
 
 ![](https://github.com/keizikang/lazymatlab/blob/39b5c5ad4dcea6f0432ef2adedb7f1cb9ba9ed58/AYE/sketch_layout.png)
@@ -111,7 +111,7 @@ txt_cross = uicontrol(...
     'units', 'normalized', ...
     'position', [0.5600    0.82    0.0454    0.0947]);
 
-% index: user input
+% text: user input background
 txt_A_index = uicontrol(...
     'Parent', hf, ...
     'Style', 'text', ...
@@ -121,6 +121,7 @@ txt_A_index = uicontrol(...
     'units', 'normalized', ...
     'position', [0.0571    0.12    0.8357    0.0947]);
 
+% edit: index input
 edit_user_indexing = uicontrol(...
     'Parent', hf, ...
     'Style', 'edit', ...
@@ -129,6 +130,7 @@ edit_user_indexing = uicontrol(...
     'position', [0.1714 0.14 0.6429 0.08], ...
     'Callback', @highlight);
 
+% text: error message
 txt_error = uicontrol(...
     'Parent', hf, ...
     'Style', 'text', ...
@@ -189,7 +191,7 @@ assignin('base', 'txt', txt);
 * cell_width와 cell_height에 0.99를 곱해 cell 간에 약간의 틈을 주었다.
 * 각 셀의 String은 i, j의 형태를 부여했다.
 * assignin과 evalin은 사랑입니다.
-* 위 코드 앞에 한 가지 snippet을 추가했다.
+* 위 코드 앞에 한 가지 snippet을 추가하자.
 
 ```matlab
 try
@@ -243,6 +245,7 @@ end
 
 * edit_Nrows와 edit_Ncols의 String이 바뀔 때 호출할 콜백 함수가 필요하다.
 * 함수를 하나만 만들고 호출한 객체의 Tag로 구분하는 것이 편할 것 같다.
+* 사실 Tag를 이용하면 분기도 필요없다.
 
 ```matlab
 function change_grid_size(s, ~, ~)
@@ -366,9 +369,9 @@ end
   * 인덱스 표현식이 잘못된 경우 (범위를 벗어났거나 표현이 잘못됐거나)
 
 * 우선 change_grid_size를 수정한다.
-* change_grid_size는 Nrows와 Ncols가 모두 사용하는 콜백함수이다. 
-* 둘 중 누가 콜했는지 판단하기 귀찮다.
-* 그냥 입력된 String을 이용해서 1행짜리 영행렬을 만들어보면 된다.
+  * change_grid_size는 Nrows와 Ncols가 모두 사용하는 콜백함수이다. 
+  * 둘 중 누가 콜했는지 판단하기 귀찮다.
+  * 그냥 입력된 String을 이용해서 1행짜리 영행렬을 만들어보면 된다.
 
 ```matlab
 try
@@ -382,7 +385,7 @@ end
 
 ---
 
-* highlight는 이미 try는 만들어놨다.
+* highlight는 이미 try를 만들어놨다.
 * catch에 들어갈 각 경우만 만들면 된다.
 
 ```matlab
