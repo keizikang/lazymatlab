@@ -248,11 +248,7 @@ end
 function change_grid_size(s, ~, ~)
 
 % change base variables
-if strcmp(s.Tag, 'Nrows')
-    assignin('base', 'Nrows', str2double(s.String));
-elseif strcmp(s.Tag, 'Ncols')
-    assignin('base', 'Ncols', str2double(s.String));
-end
+assignin('base', s.Tag, str2double(s.String));
 
 % change grid size
 display_grid(s.Parent, ...
@@ -263,7 +259,9 @@ display_grid(s.Parent, ...
 end
 ```
 
-Nrow와 Ncols에도 콜백 함수를 추가한다.
+* Nrows 또는 Ncols가 바뀌면 base에서도 바꿔줘야 한다.
+  * 이렇게 하지 않으면 행 또는 열 개수가 필요할 때마다 Nrows와 Ncols에서 값을 읽어와야 해서 귀찮아진다.
+* Nrows와 Ncols에도 콜백 함수를 추가한다.
 
 ```matlab
 % edit: number of rows
@@ -363,3 +361,5 @@ end
   * 행렬 크기가 잘못된 경우 (정수가 아니거나 숫자가 아니거나)
   * 인덱스 표현식이 잘못된 경우 (범위를 벗어났거나 표현이 잘못됐거나)
 
+* 우선 change_grid_size를 수정한다.
+* change_grid_size는 Nrows와 Ncols가 모두 사용하는 콜백함수이다. 둘 중 누가 콜했는지 
