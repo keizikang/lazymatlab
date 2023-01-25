@@ -150,6 +150,11 @@ grid_bottom = grid.grid_bottom;
 cell_width = grid_width/Ncols;
 cell_height = grid_height/Nrows;
 
+try
+    delete(evalin('base', 'txt'));
+catch
+end
+
 txt = gobjects(Nrows, Ncols);
 for j=1:Ncols
     for i=1:Nrows
