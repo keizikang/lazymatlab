@@ -70,7 +70,7 @@ classdef RR_robot < handle
             update_arms(obj)
         end
 
-        function [q_deg, p_deg] = ik(obj, target)
+        function [q_deg, p_deg, status] = ik(obj, target)
             % inverse kinematics: target -> theta and phi
             % ref: https://robotacademy.net.au/lesson/inverse-kinematics-for-a-2-joint-robot-arm-using-geometry/
             target = target - [obj.originx_cm, obj.originy_cm];
@@ -81,6 +81,7 @@ classdef RR_robot < handle
                 q_deg = rad2deg( ...
                     atan2(target(2), target(1)) - ...
                     atan2(obj.l2_cm*sind(p_deg),(obj.l1_cm+obj.l2_cm*cosd(p_deg))));
+                status = 0; % no error
             catch ME
                 if strcmp(ME.identifier, "MATLAB:atan2:complexArgument")
                     fprintf(2, 'pos_ee out of the workspace\n')
@@ -89,6 +90,7 @@ classdef RR_robot < handle
                 end
                 q_deg = obj.q_deg;
                 p_deg = obj.p_deg;
+                status = 1; % ik failed
             end
         end
 
