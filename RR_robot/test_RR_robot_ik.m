@@ -8,7 +8,7 @@ title('right click to terminate')
 xlim([-25, 25])
 ylim([-25, 25])
 
-a = Astrobot(l1_cm, l2_cm);
+a = RR_robot(l1_cm, l2_cm);
 a.draw_workspace;
 ee = plot(a.pos_ee_cm(1), a.pos_ee_cm(2), 'go');
 
