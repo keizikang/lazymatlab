@@ -26,7 +26,7 @@ classdef rect
     end
 
     methods
-        function obj = rect(width,height)
+        function obj = rect(width, height)
             obj.width = width;
             obj.height = height;
         end
