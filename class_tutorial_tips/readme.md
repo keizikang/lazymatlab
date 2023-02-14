@@ -932,7 +932,7 @@ a =
 
 set.width 또는 set.height 안에서 fix_aspect_ratio가 1이면, 우선 0으로 바꾼 후 다른 변수를 바꾸고 와서 자신을 바꾼다. 
 
-R2021b부터는 아예 [괄호, 마침표, 중괄호를 이용한 인덱싱을 재정의](https://www.mathworks.com/help/matlab/customize-object-indexing.html)하는 방법을 제공한다. 이에 대해서는 다른 포스트에서 다룰 예정이다.
+그 외에 두 가지 해결방법을 더 적어두었으니 [문서](https://github.com/keizikang/lazymatlab/tree/master/class_tutorial_tips/how_to_solve_mutually_modifying_properties_problem)를 확인해보자.
 
 
 ---
