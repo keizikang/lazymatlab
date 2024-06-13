@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
         { date: '2024-06-02', number: 15 },
         { date: '2024-06-03', number: 7 },
         { date: '2024-06-04', number: 18 },
-        { date: '2024-06-05', number: 12 }
+        { date: '2024-06-05', number: 12123 }
     ];
 
     // 모든 날짜와 숫자를 HTML에 표시합니다.
