@@ -1,4 +1,3 @@
-// script.js
 document.addEventListener('DOMContentLoaded', function() {
     // 날짜와 숫자를 설정합니다.
     const data = [
@@ -13,8 +12,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const dateElement = document.getElementById('date');
     const numberElement = document.getElementById('number');
 
-    dateElement.textContent = '날짜: ' + data[data.length - 1].date;
-    numberElement.textContent = '숫자: ' + data[data.length - 1].number;
+    const latestData = data[data.length - 1];
+    dateElement.textContent = '날짜: ' + latestData.date;
+    numberElement.textContent = '숫자: ' + latestData.number;
 
     // 그래프를 생성합니다.
     const ctx = document.getElementById('myChart').getContext('2d');
@@ -33,10 +33,8 @@ document.addEventListener('DOMContentLoaded', function() {
         options: {
             scales: {
                 x: {
-                    type: 'time',
-                    time: {
-                        unit: 'day'
-                    }
+                    type: 'category',
+                    labels: data.map(entry => entry.date)
                 },
                 y: {
                     beginAtZero: true
