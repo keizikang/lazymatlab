@@ -1,3 +1,4 @@
+// script.js
 document.addEventListener('DOMContentLoaded', function() {
     // 날짜와 숫자를 설정합니다.
     const data = [
@@ -8,13 +9,13 @@ document.addEventListener('DOMContentLoaded', function() {
         { date: '2024-06-05', number: 12 }
     ];
 
-    // 날짜와 숫자를 HTML에 표시합니다.
-    const dateElement = document.getElementById('date');
-    const numberElement = document.getElementById('number');
-
-    const latestData = data[data.length - 1];
-    dateElement.textContent = '날짜: ' + latestData.date;
-    numberElement.textContent = '숫자: ' + latestData.number;
+    // 모든 날짜와 숫자를 HTML에 표시합니다.
+    const dataListElement = document.getElementById('data-list');
+    data.forEach(entry => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `날짜: ${entry.date}, 숫자: ${entry.number}`;
+        dataListElement.appendChild(listItem);
+    });
 
     // 그래프를 생성합니다.
     const ctx = document.getElementById('myChart').getContext('2d');
@@ -33,11 +34,25 @@ document.addEventListener('DOMContentLoaded', function() {
         options: {
             scales: {
                 x: {
-                    type: 'category',
-                    labels: data.map(entry => entry.date)
+                    type: 'time',
+                    time: {
+                        unit: 'day',
+                        tooltipFormat: 'YYYY-MM-DD',
+                        displayFormats: {
+                            day: 'YYYY-MM-DD'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: '날짜'
+                    }
                 },
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '숫자'
+                    }
                 }
             }
         }
