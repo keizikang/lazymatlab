@@ -8,7 +8,7 @@ end
 
 function create_layout()
 figure('WindowButtonDownFcn', @callBack, ...
-    UserData=tic, Units='normalized', ...
+    UserData=struct('t0', tic, 'recent', nan(1, 5)), Units='normalized', ...
     Resize='off', Name='BPM MEASURE/METRONOME', MenuBar='none', ...
     NumberTitle='off')
 
@@ -58,13 +58,28 @@ uicontrol(...
     Units='normalized', ...
     Position=[.67, .5, .1, .1], ...
     FontSize=32)
+
+uicontrol(...
+    Style="checkbox", ...
+    String="averaging", ...
+    FontSize=16, ...
+    Units="normalized", ...
+    Position=[0.2, 0.2, 0.25, 0.1])
+
 end
 
 %% click callback to measure BPM
 
 function callBack(hObject, ~)
-hObject.Children(end).Children(end).String = num2str(round(1/toc(hObject.UserData)*60));
-hObject.UserData = tic;
+
+hObject.UserData.recent = [toc(hObject.UserData.t0), hObject.UserData.recent(1:end-1)];
+avg_toc = mean(hObject.UserData.recent, 'omitnan');
+if hObject.Children(1).Value
+    hObject.Children(end).Children(end).String = num2str(round(1/avg_toc*60));
+else
+    hObject.Children(end).Children(end).String = num2str(round(1/hObject.UserData.recent(1)*60));
+end
+hObject.UserData.t0 = tic;
 end
 
 %% metronome
