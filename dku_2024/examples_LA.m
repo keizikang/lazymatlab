@@ -449,7 +449,7 @@ close all
 A = [1, -2];
 b = -2;
 figure,
-fimplicit(@(x, y) dot(A, [x, y]) - b)
+fimplicit(@(x, y) A*[x; y] - b)
 
 ax = gca;
 ax.XAxisLocation = 'origin';
@@ -460,7 +460,7 @@ axis equal
 A = [1, 2, 3];
 b = 6;
 figure, hold on,
-fimplicit3(@(x, y, z) dot(A, [x, y, z]) - b, ...
+fimplicit3(@(x, y, z) A*[x; y; z] - b, ...
     EdgeColor="none")
 quiver3(0, 0, 0, A(1), A(2), A(3), ...
     LineWidth=5)
