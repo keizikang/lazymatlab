@@ -2,7 +2,7 @@
 
 파이썬 turtle을 매트랩으로 구현했습니다.
 
-```
+```matlab
 t = turtle(); % 터틀을 시작합니다.
 
 t.forward(100); % 100만큼 앞으로 갑니다.
@@ -29,7 +29,7 @@ t.clear(); % 화면을 초기화합니다.
 
 예제 1: 오망성 그리기
 
-```
+```matlab
 t = turtle();
 
 for i = 1:5
@@ -40,7 +40,7 @@ end
 
 예제 2: 육망성 그리기
 
-```
+```matlab
 t = turtle();
 
 t.pen_up();
@@ -68,7 +68,7 @@ end
 
 예제 3: MATLAB 글자 쓰기
 
-```
+```matlab
 coords = [
     1	-352	 146
     0	-352	 330
