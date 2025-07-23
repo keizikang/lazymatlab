@@ -158,13 +158,12 @@ close; t = turtle;
 t.speed = 1500;
 t.pen_up();
 colors = 'rgwbmcwyww';
-t.change_icon('cursor.png');
 ci = 0;
 for i = 1:length(coords)
     if coords(i, 1) == 1
         t.end_fill();
         t.pen_up();
-    elseif coords(i-1, 1) == 1 && coords(i, 1) == 0
+    elseif coords(i - 1, 1) == 1 && coords(i, 1) == 0
         ci = ci + 1;
         t.begin_fill(colors(ci), 'k');
     end
