@@ -28,8 +28,8 @@ classdef turtle < handle
             obj.ht = hgtransform();
             icon = flipud(imread('turtle.png'));
             obj.im = imagesc(obj.ht, icon, ...
-                XData=[-30, 30], YData=[-30, 30]);
-            obj.im.AlphaData = (255 - double(rgb2gray(icon)))/255;
+                XData=[-30, 30], YData=[-30, 30], ...
+                AlphaData=(255 - double(rgb2gray(icon)))/255);
             obj.l = plot(obj.x, obj.y, 'k');
             obj.ax.XLim = [-500, 500];
             obj.ax.YLim = [-500, 500];
@@ -38,57 +38,51 @@ classdef turtle < handle
             disableDefaultInteractivity(obj.ax);
         end
 
-        function obj = home(obj)
+        function home(obj)
             obj.x = 0;
             obj.y = 0;
             obj.ht.Matrix = eye(4);
         end
 
-        function obj = forward(obj, dist)
-            delta = dist*[cosd(obj.q), sind(obj.q)];
+        function forward(obj, dist)
+            obj.step(dist);
+        end
+
+        function backward(obj, dist)
+            obj.step(-dist)
+        end
+
+        function step(obj, delta)
+            if numel(delta) == 1
+                delta = delta*[cosd(obj.q), sind(obj.q)];
+            end
             if obj.is_filling
                 obj.fill(delta);
             else
                 obj.move(delta);
-            end
+            end            
         end
 
-        function obj = backward(obj, dist)
-            delta = dist*[cosd(obj.q + 180), sind(obj.q + 180)];
-            if obj.is_filling
-                obj.fill(delta);
-            else
-                obj.move(delta);
-            end
+        function goto(obj, x, y)
+            dx = x - obj.x;
+            dy = y - obj.y;
+            obj.turnto(rad2deg(atan2(dy, dx)));
+            obj.step([dx, dy]);
         end
-
-        function obj = left(obj, q)
+            
+        function left(obj, q)
             obj.turn(q);
         end
 
-        function obj = right(obj, q)
-            obj = obj.turn(-q);
+        function right(obj, q)
+            obj.turn(-q);
         end
 
-        function obj = turnto(obj, q)
-            dq = mod(q - obj.q + 180, 360) - 180;
-            obj.turn(dq);
+        function turnto(obj, q)
+            obj.turn(obj.wrap_angle(q - obj.q, -180));
         end
 
-        function obj = goto(obj, x, y)
-            dx = x - obj.x;
-            dy = y - obj.y;
-            dq = rad2deg(atan2(dy, dx)) - obj.q;
-            dq = mod(dq + 180, 360) - 180;
-            obj.turn(dq);
-            if obj.is_filling
-                obj.fill([dx, dy]);
-            else
-                obj.move([dx, dy]);
-            end
-        end
-            
-        function obj = pen_up(obj)
+        function pen_up(obj)
             if obj.is_filling
                 warning('not available while filling')
                 return
@@ -96,11 +90,10 @@ classdef turtle < handle
             obj.is_pen_up = true;
         end
 
-        function obj = pen_down(obj, go)
+        function pen_down(obj, go)
             if obj.is_pen_up
                 if nargin == 1
-                    line_color = obj.l(end).Color;
-                    obj.l(end+1) = plot(obj.x, obj.y, Color=line_color);
+                    obj.l(end+1) = plot(obj.x, obj.y, Color=obj.l(end).Color);
                 else
                     obj.l(end+1) = go;
                 end
@@ -109,7 +102,7 @@ classdef turtle < handle
             obj.is_pen_up = false;
         end
 
-        function obj = color(obj, line_color)
+        function color(obj, line_color)
             if obj.is_filling
                 warning('not available while filling')
                 return
@@ -118,12 +111,16 @@ classdef turtle < handle
             obj.pen_down(plot(obj.x, obj.y, Color=line_color));
         end
 
-        function obj = begin_fill(obj, FaceColor, EdgeColor, FaceAlpha)
+        function begin_fill(obj, FaceColor, EdgeColor, FaceAlpha)
             arguments
                 obj
                 FaceColor = [.6, .9, .6];
                 EdgeColor = [0 0.4470 0.7410];
                 FaceAlpha = 1;
+            end
+            if obj.is_filling
+                warning('already filling')
+                return
             end
             obj.fill_color = FaceColor;
             obj.fill_alpha = FaceAlpha;
@@ -133,7 +130,7 @@ classdef turtle < handle
             obj.is_filling = true;
         end
 
-        function obj = end_fill(obj)
+        function end_fill(obj)
             if ~obj.is_filling
                 warning('not filling now')
                 return
@@ -143,13 +140,13 @@ classdef turtle < handle
             obj.is_filling = false;
         end
 
-        function obj = change_icon(obj, filename)
+        function change_icon(obj, filename)
             icon = flipud(imread(filename));
             obj.im.CData = icon;
             obj.im.AlphaData = (255 - double(rgb2gray(icon)))/255;
         end
 
-        function obj = clear(obj)
+        function clear(obj)
             obj.x = 0;
             obj.y = 0;
             delete(obj.ax.Children(2:end));
@@ -159,67 +156,77 @@ classdef turtle < handle
     end
 
     methods (Access = private)
-        function obj = move(obj, delta)
+        function animated_step(obj, delta, q, initFcn, updateFcn)
+            arguments
+                obj
+                delta
+                q
+                initFcn = @() []
+                updateFcn = @(~, ~) []
+            end
             dx = delta(1)/obj.n_steps;
             dy = delta(2)/obj.n_steps;
+            dq = q/obj.n_steps;
+            pause_duration = norm(delta)/obj.speed/obj.speed_reg;
+            initFcn();
 
-            if obj.is_pen_up
-                update_line = @(~) [];
-            else
-                cur_l = obj.l(end);
-                cur_l.XData = [cur_l.XData, cur_l.XData(end)];
-                cur_l.YData = [cur_l.YData, cur_l.YData(end)];
-                update_line = @() obj.update_end_point(cur_l, dx, dy);                
-            end
             for i = 1:obj.n_steps
-                update_line();
-                obj.ht.Matrix = makehgtform( ...
+                updateFcn(dx, dy);
+
+                obj.ht.Matrix = makehgtform(...
                     translate=[obj.x + dx*i, obj.y + dy*i, 0], ...
-                    zrotate=deg2rad(obj.q));
-                pause(norm(delta)/obj.speed/obj.speed_reg)
+                    zrotate=deg2rad(obj.q + dq*i));
+                pause(pause_duration)
                 drawnow limitrate
             end
+
             obj.x = obj.x + delta(1);
             obj.y = obj.y + delta(2);
         end
-        
+
         function obj = turn(obj, q)
-            for i = 1:obj.n_steps
-                dq = q/obj.n_steps;
-                obj.ht.Matrix = makehgtform( ...
-                    translate=[obj.x, obj.y, 0], ...
-                    zrotate=deg2rad(obj.q + dq*i));
-                pause(1/obj.speed)
-                drawnow limitrate
+            obj.animated_step([0, 0], q);
+            obj.q = obj.wrap_angle(obj.q + q, 0);
+        end
+
+        function move(obj, delta)
+            initFcn = @() [];
+            updateFcn = @(dx, dy) [];
+
+            if ~obj.is_pen_up
+                initFcn = @() initializeLine();
+                updateFcn = @(dx, dy) obj.update_end_point(obj.l(end), dx, dy);
             end
-            obj.q = mod(obj.q + q, 360);
+
+            function initializeLine()
+                obj.l(end).XData(end+1) = obj.l(end).XData(end);
+                obj.l(end).YData(end+1) = obj.l(end).YData(end);
+            end
+
+            obj.animated_step(delta, 0, initFcn, updateFcn);
         end
 
         function obj = fill(obj, delta)
-            dx = delta(1)/obj.n_steps;
-            dy = delta(2)/obj.n_steps;
+            initFcn = @() initializePatch();
+            updateFcn = @(dx, dy) obj.update_end_point(obj.l(end), dx, dy);
 
-            cur_p = obj.l(end);
-            cur_p.Vertices = vertcat(cur_p.Vertices, [cur_p.Vertices(end,:)]);
-            cur_p.Faces = 1:size(cur_p.Vertices, 1);
-            for i = 1:obj.n_steps
-                obj.update_end_point(cur_p, dx, dy);                
-                obj.ht.Matrix = makehgtform( ...
-                    translate=[obj.x + dx*i, obj.y + dy*i, 0], ...
-                    zrotate=deg2rad(obj.q));
-                pause(norm(delta)/obj.speed/obj.speed_reg)
-                drawnow limitrate
+            function initializePatch()
+                obj.l(end).Vertices(end+1, :) = obj.l(end).Vertices(end, :);
+                obj.l(end).Faces = 1:size(obj.l(end).Vertices, 1);
             end
-            obj.x = obj.x + delta(1);
-            obj.y = obj.y + delta(2);
-        end
 
+            obj.animated_step(delta, 0, initFcn, updateFcn);
+        end
     end
 
     methods (Static, Access = private)
         function update_end_point(l, dx, dy)
             l.XData(end) = l.XData(end) + dx;
             l.YData(end) = l.YData(end) + dy;
+        end
+
+        function q = wrap_angle(q, min_angle)
+            q = mod(q - min_angle, 360) + min_angle;
         end
     end
     
